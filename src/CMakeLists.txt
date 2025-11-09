@@ -1,7 +1,7 @@
 target_sources(${PROJECT_NAME} PRIVATE
     main.cpp
     #input_mapper.cpp
-    #gyro.cpp
+    gyro.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

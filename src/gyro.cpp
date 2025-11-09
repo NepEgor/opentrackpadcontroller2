@@ -3,34 +3,6 @@
 #include <stdint.h>
 
 #include "util_func.h"
- 
-void Gyro::Filter::init(uint8_t size)
-{
-    this->size = size;
-    buffer = new int16_t[size];
-    for (uint8_t i = 0; i < size; i++)
-    {
-        buffer[i] = 0;
-    }
-    pointer = 0;
-    sum = 0;
-}
-
-Gyro::Filter::~Filter()
-{
-    delete[] buffer;
-}
-
-int16_t Gyro::Filter::filter(int16_t x)
-{
-    sum -= buffer[pointer];
-    sum += x;
-    buffer[pointer] = x;
-
-    pointer = (pointer + 1) % size;
-
-    return sum / size;
-}
 
 Gyro::Gyro()
 {
@@ -50,14 +22,7 @@ Gyro::Gyro()
 
 void Gyro::init()
 {
-    #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-        Wire.begin();
-    #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
-        Fastwire::setup(400, true);
-    #endif
-
     mpu.initialize();
-    Serial.println(mpu.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
 
     /*
     mpu.setXGyroOffset(0);
@@ -65,11 +30,6 @@ void Gyro::init()
     mpu.setZGyroOffset(0);
     */
     mpu.CalibrateGyro(6);
-
-    uint8_t filter_size = 5;
-    x_filter.init(filter_size);
-    y_filter.init(filter_size);
-    z_filter.init(filter_size);
 
     //mpu.setIntDataReadyEnabled(1);
 
@@ -88,10 +48,6 @@ void Gyro::update(uint32_t time)
             int16_t x, y, z;
 
             mpu.getRotation(&x, &y, &z);
-
-            //x = x_filter.filter(x) * invert_x;
-            //y = y_filter.filter(y) * invert_y;
-            //z = z_filter.filter(z) * invert_z;
 
             dt /= 1000.0f;
 

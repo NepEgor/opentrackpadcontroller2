@@ -3,29 +3,11 @@
 
 #include <stdint.h>
 
-#include <MPU6050.h>
+#include "MPU6050.h"
 
 class Gyro
 {
     private:
-    class Filter
-    {
-        private:
-        uint8_t size;
-        int16_t *buffer;
-        uint8_t pointer;
-        int32_t sum;
-
-        public:
-
-        void init(uint8_t size);
-
-        ~Filter();
-
-        int16_t filter(int16_t x);
-    };
-
-    Filter x_filter, y_filter, z_filter;
 
     int32_t x, y, z;
     uint8_t mapped_id;
