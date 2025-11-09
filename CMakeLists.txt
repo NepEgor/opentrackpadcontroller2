@@ -34,10 +34,12 @@ pico_sdk_init()
 add_executable(${PROJECT_NAME})
 
 add_subdirectory(src)
+add_subdirectory(lib)
 
 target_link_libraries(${PROJECT_NAME}
     pico_stdlib
     hardware_pio
+    hardware_i2c
     tinyusb_device
 )
 
