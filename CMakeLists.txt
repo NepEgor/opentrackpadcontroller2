@@ -38,6 +38,7 @@ add_subdirectory(lib)
 
 target_link_libraries(${PROJECT_NAME}
     pico_stdlib
+    hardware_adc
     hardware_pio
     hardware_i2c
     tinyusb_device

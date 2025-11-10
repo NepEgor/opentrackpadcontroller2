@@ -1,6 +1,6 @@
 target_sources(${PROJECT_NAME} PRIVATE
     main.cpp
-    #input_mapper.cpp
+    input_mapper.cpp
     gyro.cpp
 )
 

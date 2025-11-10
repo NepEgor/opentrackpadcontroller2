@@ -76,6 +76,8 @@ void Elan4::begin()
     elantech_setup_ps2();
 
     ps2.command(PS2_CMD_ENABLE);
+
+    printf("Elan4 ready\n");
 }
 
 void Elan4::elantech_detect()

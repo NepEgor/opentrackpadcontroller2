@@ -1,7 +1,7 @@
 #ifndef INPUT_MAPPER_H
 #define INPUT_MAPPER_H
 
-#include "stdint.h"
+#include <stdint.h>
 
 namespace InputMapper
 {
@@ -11,7 +11,7 @@ namespace InputMapper
 
     void update(uint32_t time);
 
-    void mapTriggers(uint32_t value[2]);
+    void mapTriggers(uint16_t value[2]);
 
     enum HardwareButtons: uint8_t
     {
@@ -33,6 +33,8 @@ namespace InputMapper
     bool mapButton(HardwareButtons button, bool value);
 
     void sendReport();
+
+    void tudTask();
 }
 
 #endif

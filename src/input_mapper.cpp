@@ -181,11 +181,13 @@ namespace InputMapper
             }
         }
 
-        #ifndef DISABLE_GYRO
+#ifndef DISABLE_GYRO
 
         gyro.init();
+        gyro.enable();
         gyro.setEnabledCallback([]{ return tjoystick_right.getTouching() > TouchControl::CT_NONE; });
         //gyro.setEnabledCallback([]{ return xinput_counter[USB_Device::BUMPER_RIGHT] > 0; });
+        //gyro.setEnabledCallback([]{ return true; });
         gyro.setMappedId(1);
         //gyro.setInvertX();
         gyro.setInvertY();
@@ -195,7 +197,7 @@ namespace InputMapper
         gyro.setBindToX(Gyro::BIND_XZ);
         gyro.setDelay(1000);
 
-        #endif
+#endif
 
         device.begin();
     }
@@ -296,17 +298,17 @@ namespace InputMapper
             }
         }
 
-        #ifndef DISABLE_GYRO
+#ifndef DISABLE_GYRO
 
         gyro.update(time);
 
-        #endif
+#endif
     }
 
-    void mapTriggers(uint32_t value[2])
+    void mapTriggers(uint16_t value[2])
     {
-        static const uint32_t min[] = {522, 523};
-        static const uint32_t max[] = {797, 795};
+        static const uint16_t min[] = {522, 523}; // todo calibrate
+        static const uint16_t max[] = {797, 795};
 
         uint8_t mapped_value[2];
  
@@ -381,7 +383,7 @@ namespace InputMapper
     }
 
     void sendReport()
-    {   
+    {
         for (auto it = xinput_counter.begin(); it != xinput_counter.end(); ++it)
         {
             device.button(it->first, it->second > 0? it->first : 0);
@@ -434,7 +436,7 @@ namespace InputMapper
             }
         }
 
-        #ifndef DISABLE_GYRO
+#ifndef DISABLE_GYRO
 
         if (gyro.Enabled())
         {
@@ -442,7 +444,7 @@ namespace InputMapper
             dy[gyro.getMappedId()] += gyro.getDY();
         }
 
-        #endif
+#endif
 
         for (int j = 0; j < 2; ++j)
         {
@@ -464,5 +466,10 @@ namespace InputMapper
         }
 
         device.sendReport();
+    }
+
+    void tudTask()
+    {
+        device.tudTask();
     }
 }
