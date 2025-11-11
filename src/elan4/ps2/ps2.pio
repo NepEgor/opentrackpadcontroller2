@@ -1,0 +1,55 @@
+
+.program ps2
+
+; pins
+; in  0 - data, 1 - clock
+; out 0 - data
+; set 0 - data, 1 - clock
+
+.wrap_target
+read:
+    wait 0 pin 1
+    wait 1 pin 1
+
+    set x 7 ; 1 byte
+readloop:
+    wait 0 pin 1
+    in pins 1
+    wait 1 pin 1
+    jmp x-- readloop
+
+    ; parity and stop bits
+    wait 0 pin 1
+    wait 1 pin 1
+    wait 0 pin 1
+    wait 1 pin 1
+.wrap
+
+public write:
+    mov isr null ; clear input register
+
+    set pindirs 0b11 ; clock and data to output
+    set pins 0b01 [10] ; clock - low, data - high, delay 100 us
+
+    set pins 0b10 ; clock - high, data - low
+    set pindirs 0b01 ; clock to input
+
+    set x 9 ; 1 byte + parity bit + stop bit
+writeloop:
+    wait 0 pin 1
+    out pins 1
+    wait 1 pin 1
+    jmp x-- writeloop
+
+    set pindirs 0b00 ; clock and data to input
+
+    wait 0 pin 1 ; read ACK bit
+    wait 1 pin 1
+
+    jmp read ; read ACK byte
+
+
+% c-sdk {
+void ps2_program_init(PIO pio, uint sm, uint offset, uint data_pin);
+uint16_t ps2_make_frame(uint8_t data);
+%}
