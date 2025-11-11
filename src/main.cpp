@@ -83,9 +83,12 @@ int main()
     
 #ifndef DISABLE_TRACKPADS
 
+    PIO pio = pio0;
+    uint offset = pio_add_program(pio, &ps2_program);
+
     for (uint8_t i = 0; i < trackpad_count; ++i)
     {
-        trackpad[i].begin();
+        trackpad[i].begin(pio, i, offset);
     }
 
     trackpad_maxX = trackpad[0].getMaxX();

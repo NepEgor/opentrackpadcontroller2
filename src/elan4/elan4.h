@@ -56,6 +56,7 @@ private:
     static const uint8_t packet_size = 6;
     uint8_t packet_type;
     uint8_t packet[packet_size];
+    uint8_t packet_dma[packet_size];
 
 public:
     static const uint8_t fingers_num = 5;
@@ -79,7 +80,7 @@ private:
 public:
     Elan4(uint data_pin);
 
-    void begin();
+    void begin(PIO pio, uint sm, uint offset);
 
     int8_t poll(TouchEvent* tevent);
 

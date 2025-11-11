@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ps2.pio.h"
+#include <hardware/dma.h>
 
 class PS2
 {
@@ -15,12 +16,16 @@ public:
     // clock_pin = data_pin + 1
     PS2(uint data_pin);
 
-    void begin();
+    void begin(PIO pio, uint sm, uint offset);
     void restart();
 
     bool readByte(uint8_t &data);
     uint8_t readByteBlocking();
     uint8_t writeByte(uint8_t data);
+
+    void setupDma(uint8_t *packet, uint packet_size);
+    bool isPacketReady();
+    void restartDMA(uint8_t *packet);
 
     // write command byte
     // command format 0xARCC

@@ -54,9 +54,9 @@ void Elan4::writeReg(uint8_t reg, uint8_t val)
     ps2.writeByte(PS2_CMD_SETSCALE11 & 0xFF);
 }
 
-void Elan4::begin()
+void Elan4::begin(PIO pio, uint sm, uint offset)
 {
-    ps2.begin();
+    ps2.begin(pio, sm, offset);
 
     uint8_t param[3];
 
@@ -76,6 +76,8 @@ void Elan4::begin()
     elantech_setup_ps2();
 
     ps2.command(PS2_CMD_ENABLE);
+
+    ps2.setupDma(packet_dma, packet_size);
 
     printf("Elan4 ready\n");
 }

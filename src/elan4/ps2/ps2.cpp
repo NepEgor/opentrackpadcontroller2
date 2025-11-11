@@ -7,9 +7,13 @@ PS2::PS2(uint data_pin)
     this->data_pin = data_pin;
 }
 
-void PS2::begin()
+void PS2::begin(PIO pio, uint sm, uint offset)
 {
-    pio_claim_free_sm_and_add_program(&ps2_program, &pio, &sm, &offset);
+    this->pio = pio;
+    this->sm = sm;
+    this->offset = offset;
+
+    pio_sm_claim(pio, sm);
     ps2_program_init(pio, sm, offset, data_pin);
     pio_sm_set_enabled(pio, sm, true);
 }
@@ -18,7 +22,7 @@ void PS2::restart()
 {
     pio_sm_set_enabled(pio, sm, false);
     pio_sm_restart(pio, sm);
-    pio_sm_exec_wait_blocking(pio, 0, ps2_wrap_target + offset); // jmp to start
+    pio_sm_exec_wait_blocking(pio, sm, ps2_wrap_target + offset); // jmp to start
 }
 
 bool PS2::readByte(uint8_t &data)
@@ -40,7 +44,7 @@ uint8_t PS2::readByteBlocking()
 uint8_t PS2::writeByte(uint8_t data)
 {
     pio_sm_put_blocking(pio, sm, ps2_make_frame(data));
-    pio_sm_exec_wait_blocking(pio, 0, ps2_offset_write + offset);
+    pio_sm_exec_wait_blocking(pio, sm, ps2_offset_write + offset);
 
     data = readByteBlocking();
 
@@ -58,6 +62,36 @@ uint8_t PS2::writeByte(uint8_t data)
         default:
             return -1;
     }
+}
+
+void PS2::setupDma(uint8_t *packet, uint packet_size)
+{
+    uint channel = sm;
+    dma_channel_config dma_cfg = dma_channel_get_default_config(channel);
+    channel_config_set_read_increment(&dma_cfg, false);
+    channel_config_set_write_increment(&dma_cfg, true);
+    channel_config_set_transfer_data_size(&dma_cfg, DMA_SIZE_8);
+    channel_config_set_dreq(&dma_cfg, pio_get_dreq(pio, sm, false));
+
+    // read from the most significant byte
+    uint8_t *read_addr = (uint8_t *)&pio->rxf[sm] + 3;
+
+    dma_channel_configure(channel, &dma_cfg,
+        packet,
+        read_addr,
+        packet_size,
+        true
+    );
+}
+
+bool PS2::isPacketReady()
+{
+    return !dma_channel_is_busy(sm);
+}
+
+void PS2::restartDMA(uint8_t *packet)
+{
+    dma_channel_set_write_addr(sm, packet, true);
 }
 
 uint8_t PS2::command(uint16_t command, uint8_t *param)

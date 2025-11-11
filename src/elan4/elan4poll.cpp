@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "elan4.h"
 
@@ -50,7 +51,7 @@ uint8_t Elan4::elantech_packet_check_v4()
 
 uint8_t Elan4::process_packet_status_v4(TouchEvent* tevent)
 {
-    printf("Status\n");
+    //printf("Status\n");
 
     touching_prev = touching;
     touching = packet[1] & 0x1f;
@@ -60,7 +61,7 @@ uint8_t Elan4::process_packet_status_v4(TouchEvent* tevent)
     uint8_t dif01 = (touching ^ touching_prev) & ~touching_prev; // sets changes from 0 to 1
     uint8_t dif10 = (touching ^ touching_prev) & ~touching;      // sets changes from 1 to 0
 
-    printf("S %X %X %X %X\n", touching, touching_prev, dif01, dif10);
+    //printf("S %X %X %X %X\n", touching, touching_prev, dif01, dif10);
 
     if (dif01)
     {
@@ -96,7 +97,7 @@ uint8_t Elan4::process_packet_status_v4(TouchEvent* tevent)
 
 uint8_t Elan4::process_packet_head_v4(TouchEvent* tevent)
 {
-    printf("Head\n");
+    //printf("Head\n");
 
     int8_t fid = ((packet[3] & 0xe0) >> 5) - 1;
     if(fid < 0) return 0;
@@ -139,14 +140,14 @@ uint8_t Elan4::process_packet_head_v4(TouchEvent* tevent)
     tevent[0].fp.dx = fingers[fid].dx;
     tevent[0].fp.dy = fingers[fid].dy;
 
-    printf("H f %i  x %i  y %i\n", fid, fingers[fid].x, fingers[fid].y);
+    //printf("H f %i  x %i  y %i\n", fid, fingers[fid].x, fingers[fid].y);
 
     return size;
 }
 
 uint8_t Elan4::process_packet_motion_v4(TouchEvent* tevent)
 {
-    printf("Motion\n");
+    //printf("Motion\n");
 
     int16_t fid = ((packet[0] & 0xe0) >> 5) - 1;
     if (fid < 0) return 0;
@@ -173,7 +174,7 @@ uint8_t Elan4::process_packet_motion_v4(TouchEvent* tevent)
     tevent[0].fp.dx = fingers[fid].dx;
     tevent[0].fp.dy = fingers[fid].dy;
 
-    printf("M f %i  x %i  y %i\n", fid, fingers[fid].x, fingers[fid].y);
+    //printf("M f %i  x %i  y %i\n", fid, fingers[fid].x, fingers[fid].y);
 
     if(sid >= 0)
     {
@@ -191,7 +192,7 @@ uint8_t Elan4::process_packet_motion_v4(TouchEvent* tevent)
         tevent[1].fp.dx = fingers[sid].dx;
         tevent[1].fp.dy = fingers[sid].dy;
 
-        printf("  f %i  x %i  y %i\n", sid, fingers[sid].x, fingers[sid].y);
+        //printf("  f %i  x %i  y %i\n", sid, fingers[sid].x, fingers[sid].y);
     }
 
     return size;
@@ -199,16 +200,13 @@ uint8_t Elan4::process_packet_motion_v4(TouchEvent* tevent)
 
 int8_t Elan4::poll(TouchEvent* tevent)
 {
-    if (!ps2.readByte(packet[0]))
+    if (!ps2.isPacketReady())
     {
         return -1; // no data available
     }
 
-    // read the rest of the packet
-    for (uint8_t i = 1; i < packet_size; ++i)
-    {
-        packet[i] = ps2.readByteBlocking();
-    }
+    memcpy(packet, packet_dma, packet_size);
+    ps2.restartDMA(packet_dma);
 
     elantech_packet_check_v4();
     switch(packet_type) {
@@ -222,11 +220,11 @@ int8_t Elan4::poll(TouchEvent* tevent)
             return process_packet_motion_v4(tevent);
         
         case PACKET_UNKNOWN:
-            printf("PACKET_UNKNOWN");
+            printf("PACKET_UNKNOWN\n");
             return -2;
         
         case PACKET_TRACKPOINT:
-            printf("PACKET_TRACKPOINT");
+            printf("PACKET_TRACKPOINT\n");
             return -2;
 
         default:
