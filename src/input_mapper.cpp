@@ -307,8 +307,8 @@ namespace InputMapper
 
     void mapTriggers(uint16_t value[2])
     {
-        static const uint16_t min[] = {522, 523}; // todo calibrate
-        static const uint16_t max[] = {797, 795};
+        static const uint16_t min[] = {2150, 2150}; // todo add auto calibration
+        static const uint16_t max[] = {3000, 3000};
 
         uint8_t mapped_value[2];
  

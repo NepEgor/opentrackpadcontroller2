@@ -160,16 +160,11 @@ int main()
         uint16_t triggers[2];
         for (uint8_t i = 0; i < sizeof(pin_trigger); ++i)
         {
+            adc_select_input(adc_trigger[i]);
             triggers[i] = adc_read();
         }
 
-        //Serial.print(0);
-        //Serial.print('\t');
-        //Serial.print(triggers[0]);
-        //Serial.print('\t');
-        //Serial.print(triggers[1]);
-        //Serial.print('\t'); 
-        //Serial.println(1000);
+        //printf("%u %u\n", triggers[0], triggers[1]);
 
         InputMapper::mapTriggers(triggers);
 
