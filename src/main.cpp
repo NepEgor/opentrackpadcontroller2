@@ -78,7 +78,7 @@ int main()
     {
         gpio_init(pin_button[i]);
         gpio_set_dir(pin_button[i], GPIO_IN);
-        gpio_pull_down(pin_button[i]);
+        gpio_pull_up(pin_button[i]);
     }
     
 #ifndef DISABLE_TRACKPADS
@@ -170,7 +170,7 @@ int main()
 
         for (uint8_t i = 0; i < sizeof(pin_button); ++i)
         {
-            uint8_t value = gpio_get(pin_button[i]);
+            uint8_t value = !gpio_get(pin_button[i]);
             if (value != button_state[i])
             {
                 if (InputMapper::mapButton((InputMapper::HardwareButtons)(i), value))
