@@ -64,15 +64,13 @@ namespace InputMapper
         USB_Device::DPAD_RIGHT,
     };
 
-    uint16_t button_tp_map[2][2] =
+    uint16_t button_tp_map[2][1] =
     {
         {
             USB_Device::FACE_B,
-            USB_Device::JOYSTICK_LEFT,
         },
         {
             USB_Device::FACE_X,
-            USB_Device::JOYSTICK_RIGHT,
         }
     };
 
@@ -82,6 +80,7 @@ namespace InputMapper
         USB_Device::DPAD_DOWN,
         USB_Device::DPAD_LEFT,
         USB_Device::DPAD_RIGHT,
+        USB_Device::JOYSTICK_LEFT,
     };
 
     uint16_t dpad_right_map[] = 
@@ -90,6 +89,7 @@ namespace InputMapper
         USB_Device::FACE_A,
         USB_Device::FACE_X,
         USB_Device::FACE_B,
+        USB_Device::JOYSTICK_RIGHT,
     };
 
     uint16_t* dpad_map[] =
@@ -159,7 +159,7 @@ namespace InputMapper
 
         for (uint8_t id = 0; id < 2; ++id)
         {
-            for (uint8_t c = 0; c < num_controls; ++c)
+            for (uint8_t c = 0; c < 1; ++c) // dpad has no hw button - skip
             {
                 auto search = xinput_counter.find(button_tp_map[id][c]);
                 if (search == xinput_counter.end())
@@ -171,7 +171,7 @@ namespace InputMapper
 
         for (uint8_t d = 0; d < 2; ++d)
         {
-            for (uint8_t i = 0; i < 4; ++i)
+            for (uint8_t i = 0; i < 5; ++i) // todo get range from dpad mappings
             {
                 auto search = xinput_counter.find(dpad_map[d][i]);
                 if (search == xinput_counter.end())
@@ -224,7 +224,7 @@ namespace InputMapper
 
     void mapDpad(uint8_t dpad, uint8_t direction, bool value)
     {
-        for (uint8_t i = 0; i < 4; ++i)
+        for (uint8_t i = 0; i < 5; ++i) // todo get range from dpad mappings
         {
             if (direction & (1 << i))
             {
@@ -370,7 +370,7 @@ namespace InputMapper
 
         uint8_t res = 0;
 
-        for (uint8_t c = 0; c < num_controls; ++c)
+        for (uint8_t c = 0; c < 1; ++c) // dpad has no hw button - skip
         {
             if (tcontrols[id][c]->getTouching() > TouchControl::CT_NONE || !value)
             {
