@@ -59,9 +59,9 @@ namespace InputMapper
         USB_Device::BUMPER_RIGHT,
         USB_Device::HOME,
         USB_Device::FACE_A,
-        USB_Device::JOYSTICK_RIGHT,
+        USB_Device::DPAD_UP,
         USB_Device::FACE_B,
-        USB_Device::JOYSTICK_LEFT,
+        USB_Device::DPAD_RIGHT,
     };
 
     uint16_t button_tp_map[2][2] =
