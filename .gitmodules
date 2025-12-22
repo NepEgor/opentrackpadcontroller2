@@ -1,3 +1,6 @@
 [submodule "lib/i2cdevlib"]
 	path = lib/i2cdevlib
 	url = https://github.com/jrowberg/i2cdevlib.git
+[submodule "lib/sdcardlib"]
+	path = lib/sdcardlib
+	url = https://github.com/carlk3/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico.git
