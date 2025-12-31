@@ -15,23 +15,23 @@ const uint8_t pin_trigger[] = {26, 27};
 const uint8_t adc_trigger[] = {0, 1}; // pin_trigger - 26
 
 const uint8_t pin_button[] = {
-    19,  // START
-    18,  // SELECT
-    6,  // BUMPER_LEFT
-    7,  // BUMPER_RIGHT
+    19, // START
+    18, // SELECT
+    9,  // BUMPER_LEFT
+    13, // BUMPER_RIGHT
     10, // HOME
-    2,  // GRIP_A
-    3,  // GRIP_B
-    8,  // GRIP_X
-    9,  // GRIP_Y
+    11, // GRIP_A
+    12, // GRIP_B
+    7,  // GRIP_X
+    8,  // GRIP_Y
     28, // TRACKPAD_LEFT
     29, // TRACKPAD_RIGHT
 };
 
 uint8_t button_state[sizeof(pin_button)] = {0};
 
-const uint8_t pin_gyro_sda = PICO_DEFAULT_I2C_SDA_PIN; // 4
-const uint8_t pin_gyro_scl = PICO_DEFAULT_I2C_SCL_PIN; // 5
+const uint8_t pin_gyro_sda = 20;
+const uint8_t pin_gyro_scl = 21;
 
 #ifndef DISABLE_TRACKPADS
 
