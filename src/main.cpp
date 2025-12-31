@@ -88,7 +88,7 @@ int main()
 
     for (uint8_t i = 0; i < trackpad_count; ++i)
     {
-        trackpad[i].begin(pio, i, offset);
+        trackpad[i].begin(pio, offset);
     }
 
     trackpad_maxX = trackpad[0].getMaxX();

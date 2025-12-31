@@ -8,6 +8,7 @@ class PS2
 private:
     PIO pio;
     uint sm;
+    uint dma;
     uint offset;
 
     uint data_pin;
@@ -16,7 +17,7 @@ public:
     // clock_pin = data_pin + 1
     PS2(uint data_pin);
 
-    void begin(PIO pio, uint sm, uint offset);
+    void begin(PIO pio, uint offset);
     void restart();
 
     bool readByte(uint8_t &data);
