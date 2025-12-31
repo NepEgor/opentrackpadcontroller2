@@ -24,16 +24,7 @@ void Gyro::init()
 {
     mpu.initialize();
 
-    /*
-    mpu.setXGyroOffset(0);
-    mpu.setYGyroOffset(0);
-    mpu.setZGyroOffset(0);
-    */
-    mpu.CalibrateGyro(6);
-
-    //mpu.setIntDataReadyEnabled(1);
-
-    //mpu.setDLPFMode(MPU6050_DLPF_BW_5);
+    // todo callibration seems to be used only with MotionApps and not do anything for raw data
 }
 
 void Gyro::update(uint32_t time)
