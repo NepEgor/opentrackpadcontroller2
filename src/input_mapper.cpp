@@ -3,6 +3,7 @@
 #include "usb_device.h"
 #include "touch_controls_all.h"
 #include "gyro.h"
+#include "callibration.h"
 
 #include <map>
 
@@ -100,6 +101,8 @@ namespace InputMapper
     
     std::map<uint16_t, uint8_t> xinput_counter;
 
+    trigger_callibration_info *callibration;
+
     void begin()
     {
         float ppmX = 1872 / 62.5;
@@ -179,6 +182,16 @@ namespace InputMapper
                     xinput_counter.insert(std::make_pair(dpad_map[d][i], 0));
                 }
             }
+        }
+
+        callibration = get_trigger_callibration();
+
+        uint16_t trigger_dead_zone_min = 100;
+        uint16_t trigger_dead_zone_max = 100;
+        for (uint8_t i = 0; i < NUM_TRIGGERS; i++)
+        {
+            callibration[i].min += trigger_dead_zone_min;
+            callibration[i].max -= trigger_dead_zone_max;
         }
 
 #ifndef DISABLE_GYRO
@@ -307,24 +320,21 @@ namespace InputMapper
 
     void mapTriggers(uint16_t value[2])
     {
-        static const uint16_t min[] = {2150, 2150}; // todo add auto calibration
-        static const uint16_t max[] = {3000, 3000};
-
         uint8_t mapped_value[2];
  
         for (uint8_t i = 0; i < 2; ++i)
         {
-            if (value[i] < min[i])
+            if (value[i] < callibration[i].min)
             {
                 mapped_value[i] = 0;
             }
-            else if (value[i] > max[i])
+            else if (value[i] > callibration[i].max)
             {
                 mapped_value[i] = 255;
             }
             else
             {
-                mapped_value[i] = (value[i] - min[i]) * 255 / (max[i] - min[i]);
+                mapped_value[i] = (value[i] - callibration[i].min) * 255 / (callibration[i].max - callibration[i].min);
             }
         }
 

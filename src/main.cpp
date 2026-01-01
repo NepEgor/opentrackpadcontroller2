@@ -1,18 +1,17 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "hardware/adc.h"
 #include "hardware/i2c.h"
+#include "ff.h"
 
 #include "elan4.h"
 #include "input_mapper.h"
 #include "usb_device.h"
+#include "triggers.h"
+#include "callibration.h"
 
 const uint8_t pin_led = PICO_DEFAULT_LED_PIN; // 25
 const uint8_t pin_key_button = 23;
-
-const uint8_t pin_trigger[] = {26, 27};
-const uint8_t adc_trigger[] = {0, 1}; // pin_trigger - 26
 
 const uint8_t pin_button[] = {
     19, // START
@@ -49,6 +48,19 @@ int32_t trackpad_maxX, trackpad_maxY;
 
 #endif
 
+bool is_callibrate_button_state_rising()
+{
+    static bool last_state = 0;
+
+    bool state = !gpio_get(pin_button[1]); // SELECT
+
+    bool ret = state == 1 && last_state == 0;
+
+    last_state = state;
+
+    return ret;
+}
+
 int main()
 {
     stdio_init_all();
@@ -62,17 +74,13 @@ int main()
     gpio_pull_up(pin_key_button);
 
     i2c_init(i2c_default, 400*1000);
-    
+
     gpio_set_function(pin_gyro_sda, GPIO_FUNC_I2C);
     gpio_set_function(pin_gyro_scl, GPIO_FUNC_I2C);
     gpio_pull_up(pin_gyro_sda);
     gpio_pull_up(pin_gyro_scl);
 
-    adc_init();
-    for (uint8_t i = 0; i < sizeof(pin_trigger); ++i)
-    {
-        adc_gpio_init(pin_trigger[i]);
-    }
+    triggers_init();
 
     for (uint8_t i = 0; i < sizeof(pin_button); ++i)
     {
@@ -80,7 +88,10 @@ int main()
         gpio_set_dir(pin_button[i], GPIO_IN);
         gpio_pull_up(pin_button[i]);
     }
-    
+
+    // if true skips callibration load from sd card and forces manual callibration
+    bool skip_callibration_load = is_callibrate_button_state_rising();
+
 #ifndef DISABLE_TRACKPADS
 
     PIO pio = pio0;
@@ -95,6 +106,8 @@ int main()
     trackpad_maxY = trackpad[0].getMaxY();
 
 #endif
+
+    callibrate(is_callibrate_button_state_rising, skip_callibration_load);
 
     InputMapper::begin();
 
@@ -158,11 +171,7 @@ int main()
 #endif
 
         uint16_t triggers[2];
-        for (uint8_t i = 0; i < sizeof(pin_trigger); ++i)
-        {
-            adc_select_input(adc_trigger[i]);
-            triggers[i] = adc_read();
-        }
+        triggers_read(triggers);
 
         //printf("%u %u\n", triggers[0], triggers[1]);
 

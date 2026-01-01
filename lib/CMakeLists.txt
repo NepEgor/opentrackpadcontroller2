@@ -9,3 +9,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${I2CDEVLIB_PATH}/I2Cdev
     ${I2CDEVLIB_PATH}/MPU6050
 )
+
+add_subdirectory(sdcardlib/src)
+target_link_libraries(${PROJECT_NAME}
+    no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
+)
