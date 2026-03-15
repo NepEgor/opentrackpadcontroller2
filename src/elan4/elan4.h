@@ -80,7 +80,7 @@ private:
 public:
     Elan4(uint data_pin);
 
-    void begin(PIO pio, uint sm, uint offset);
+    void begin(PIO pio, uint offset);
 
     int8_t poll(TouchEvent* tevent);
 

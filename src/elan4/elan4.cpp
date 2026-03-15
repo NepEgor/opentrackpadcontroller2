@@ -54,9 +54,9 @@ void Elan4::writeReg(uint8_t reg, uint8_t val)
     ps2.writeByte(PS2_CMD_SETSCALE11 & 0xFF);
 }
 
-void Elan4::begin(PIO pio, uint sm, uint offset)
+void Elan4::begin(PIO pio, uint offset)
 {
-    ps2.begin(pio, sm, offset);
+    ps2.begin(pio, offset);
 
     uint8_t param[3];
 

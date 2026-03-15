@@ -2,18 +2,21 @@
 #include "ps2.pio.h"
 #include "ps2defines.h"
 
+#include <stdio.h>
+
 PS2::PS2(uint data_pin)
 {
     this->data_pin = data_pin;
 }
 
-void PS2::begin(PIO pio, uint sm, uint offset)
+void PS2::begin(PIO pio, uint offset)
 {
     this->pio = pio;
-    this->sm = sm;
     this->offset = offset;
 
-    pio_sm_claim(pio, sm);
+    sm = pio_claim_unused_sm(pio, true);
+    printf("claimed pio sm %d\n", sm);
+
     ps2_program_init(pio, sm, offset, data_pin);
     pio_sm_set_enabled(pio, sm, true);
 }
@@ -66,8 +69,10 @@ uint8_t PS2::writeByte(uint8_t data)
 
 void PS2::setupDma(uint8_t *packet, uint packet_size)
 {
-    uint channel = sm;
-    dma_channel_config dma_cfg = dma_channel_get_default_config(channel);
+    dma = dma_claim_unused_channel(true);
+    printf("pio sm %d, claimed dma %d\n", sm, dma);
+
+    dma_channel_config dma_cfg = dma_channel_get_default_config(dma);
     channel_config_set_read_increment(&dma_cfg, false);
     channel_config_set_write_increment(&dma_cfg, true);
     channel_config_set_transfer_data_size(&dma_cfg, DMA_SIZE_8);
@@ -76,7 +81,7 @@ void PS2::setupDma(uint8_t *packet, uint packet_size)
     // read from the most significant byte
     uint8_t *read_addr = (uint8_t *)&pio->rxf[sm] + 3;
 
-    dma_channel_configure(channel, &dma_cfg,
+    dma_channel_configure(dma, &dma_cfg,
         packet,
         read_addr,
         packet_size,
@@ -86,12 +91,12 @@ void PS2::setupDma(uint8_t *packet, uint packet_size)
 
 bool PS2::isPacketReady()
 {
-    return !dma_channel_is_busy(sm);
+    return !dma_channel_is_busy(dma);
 }
 
 void PS2::restartDMA(uint8_t *packet)
 {
-    dma_channel_set_write_addr(sm, packet, true);
+    dma_channel_set_write_addr(dma, packet, true);
 }
 
 uint8_t PS2::command(uint16_t command, uint8_t *param)
