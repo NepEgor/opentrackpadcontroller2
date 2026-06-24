@@ -47,7 +47,7 @@ class TouchControl
 
     virtual TouchState touch(int8_t fid, int32_t tx, int32_t ty) = 0;
 
-    int8_t getTouching() {return touching;}
+    TouchState getTouching() {return touching;}
 
     ControlType getControlType() {return control_type;}
 };

@@ -24,8 +24,7 @@ void USB_Device::begin()
 
 void USB_Device::button(uint16_t button, uint16_t value)
 {
-    xinput_report.buttons = ((xinput_report.buttons |  button) &  value) |
-                            ((xinput_report.buttons & ~button) & ~value);
+    if (value) xinput_report.buttons |= button;
 }
 
 uint16_t USB_Device::isButtonPressed(uint16_t button)
@@ -55,6 +54,8 @@ void USB_Device::triggers(uint8_t values[2])
 void USB_Device::sendReport()
 {
     sendReportData((uint8_t*)(&xinput_report), sizeof(xinput_report));
+
+    xinput_report.buttons = 0;
 }
 
 void USB_Device::recvReport()

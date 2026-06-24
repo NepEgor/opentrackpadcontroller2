@@ -99,7 +99,10 @@ namespace InputMapper
         dpad_right_map,
     };
     
-    std::map<uint16_t, uint8_t> xinput_counter;
+    std::map<uint16_t, uint8_t> xinput_counter; // todo remove
+
+    uint8_t button_state[11] = {0};
+    uint8_t dpad_state[][5] = {{0}, {0}};
 
     trigger_callibration_info *callibration;
 
@@ -198,7 +201,7 @@ namespace InputMapper
 
         gyro.init();
         gyro.enable();
-        gyro.setEnabledCallback([]{ return tjoystick_right.getTouching() > TouchControl::CT_NONE; });
+        gyro.setEnabledCallback([]{ return tjoystick_right.getTouching() > TouchControl::TS_NONE; });
         //gyro.setEnabledCallback([]{ return xinput_counter[USB_Device::BUMPER_RIGHT] > 0; });
         //gyro.setEnabledCallback([]{ return true; });
         gyro.setMappedId(1);
@@ -241,7 +244,8 @@ namespace InputMapper
         {
             if (direction & (1 << i))
             {
-                modifyCounter(dpad_map[dpad][i], value);
+                //modifyCounter(dpad_map[dpad][i], value);
+                dpad_state[dpad][i] = value;
             }
         }
     }
@@ -356,25 +360,27 @@ namespace InputMapper
                 break;
             
             case HardwareButtons::BUMPER_LEFT:
-
-                tcontrols[1][0]->reset();
-
-                if (value)
+                if (button_state[button] != value)
                 {
-                    tcontrols[1][0] = &tjoystick_right_wheel;
-                    gyro.disable();
-                }
-                else
-                {
-                    tcontrols[1][0] = &tjoystick_right;
-                    gyro.enable();
+                    tcontrols[1][0]->reset();
+
+                    if (value)
+                    {
+                        tcontrols[1][0] = &tjoystick_right_wheel;
+                        gyro.disable();
+                    }
+                    else
+                    {
+                        tcontrols[1][0] = &tjoystick_right;
+                        gyro.enable();
+                    }
                 }
 
-                modifyCounter(button_map[button], value);
-                return true;
+                // fall through
 
             default:
-                modifyCounter(button_map[button], value);
+                //modifyCounter(button_map[button], value);
+                button_state[button] = value;
                 return true;
         }
 
@@ -382,9 +388,10 @@ namespace InputMapper
 
         for (uint8_t c = 0; c < 1; ++c) // dpad has no hw button - skip
         {
-            if (tcontrols[id][c]->getTouching() > TouchControl::CT_NONE || !value)
+            if (tcontrols[id][c]->getTouching() > TouchControl::TS_NONE || !value)
             {
-                modifyCounter(button_tp_map[id][c], value);
+                //modifyCounter(button_tp_map[id][c], value);
+                button_state[button] = value;
                 ++res;
             }
         }
@@ -394,9 +401,26 @@ namespace InputMapper
 
     void sendReport()
     {
-        for (auto it = xinput_counter.begin(); it != xinput_counter.end(); ++it)
+        // for (auto it = xinput_counter.begin(); it != xinput_counter.end(); ++it)
+        // {
+        //     device.button(it->first, it->second > 0? it->first : 0);
+        // }
+
+        // buttons
+        for (uint8_t i = 0; i < 9; ++i) // todo remove magic number
         {
-            device.button(it->first, it->second > 0? it->first : 0);
+            device.button(button_map[i], button_state[i]);
+        }
+
+        // trackpad buttons
+        device.button(button_tp_map[0][0], button_state[9]);
+        device.button(button_tp_map[1][0], button_state[10]);
+
+        // dpad
+        for (uint8_t i = 0; i < 5; ++i) // todo remove magic number
+        {
+            device.button(dpad_map[0][i], dpad_state[0][i]);
+            device.button(dpad_map[1][i], dpad_state[1][i]);
         }
 
         int32_t x[2] = {USB_Device::usb_joystick_x, USB_Device::usb_joystick_x};
