@@ -5,8 +5,6 @@
 #include "gyro.h"
 #include "callibration.h"
 
-#include <map>
-
 #include "util_func.h"
 
 namespace InputMapper
@@ -98,8 +96,6 @@ namespace InputMapper
         dpad_left_map,
         dpad_right_map,
     };
-    
-    std::map<uint16_t, uint8_t> xinput_counter; // todo remove
 
     uint8_t button_state[11] = {0};
     uint8_t dpad_state[][5] = {{0}, {0}};
@@ -154,39 +150,6 @@ namespace InputMapper
         tdpad_left.init(pos_x, pos_y, pos_r, TouchDpad::DPAD_TYPE_SECTOR_4);
         tdpad_left.setDeadZoneInner(dead_zone_inner);
 
-        for (uint8_t i = 0; i < sizeof(button_map) / sizeof(uint16_t); ++i)
-        {
-            auto search = xinput_counter.find(button_map[i]);
-            if (search == xinput_counter.end())
-            {
-                xinput_counter.insert(std::make_pair(button_map[i], 0));
-            }
-        }
-
-        for (uint8_t id = 0; id < 2; ++id)
-        {
-            for (uint8_t c = 0; c < 1; ++c) // dpad has no hw button - skip
-            {
-                auto search = xinput_counter.find(button_tp_map[id][c]);
-                if (search == xinput_counter.end())
-                {
-                    xinput_counter.insert(std::make_pair(button_tp_map[id][c], 0));
-                }
-            }
-        }
-
-        for (uint8_t d = 0; d < 2; ++d)
-        {
-            for (uint8_t i = 0; i < 5; ++i) // todo get range from dpad mappings
-            {
-                auto search = xinput_counter.find(dpad_map[d][i]);
-                if (search == xinput_counter.end())
-                {
-                    xinput_counter.insert(std::make_pair(dpad_map[d][i], 0));
-                }
-            }
-        }
-
         callibration = get_trigger_callibration();
 
         uint16_t trigger_dead_zone_min = 100;
@@ -202,7 +165,6 @@ namespace InputMapper
         gyro.init();
         gyro.enable();
         gyro.setEnabledCallback([]{ return tjoystick_right.getTouching() > TouchControl::TS_NONE; });
-        //gyro.setEnabledCallback([]{ return xinput_counter[USB_Device::BUMPER_RIGHT] > 0; });
         //gyro.setEnabledCallback([]{ return true; });
         gyro.setMappedId(1);
         //gyro.setInvertX();
@@ -218,38 +180,17 @@ namespace InputMapper
         device.begin();
     }
 
-    void modifyCounter(uint16_t xinput_button, bool value)
-    {
-        auto search = xinput_counter.find(xinput_button);
-
-        if (search != xinput_counter.end())
-        {
-            if (value)
-            {
-                search->second++;
-            }
-            else
-            {
-                if (search->second > 0)
-                {
-                    search->second--;
-                }
-            }
-        }
-    }
-
     void mapDpad(uint8_t dpad, uint8_t direction, bool value)
     {
         for (uint8_t i = 0; i < 5; ++i) // todo get range from dpad mappings
         {
             if (direction & (1 << i))
             {
-                //modifyCounter(dpad_map[dpad][i], value);
                 dpad_state[dpad][i] = value;
             }
         }
     }
-    
+
     void mapTrackpad(uint8_t id, uint8_t fid, int32_t x, int32_t y, int32_t dx, int32_t dy, uint32_t time)
     {
         for (uint8_t c = 0; c < num_controls; ++c)
@@ -379,7 +320,6 @@ namespace InputMapper
                 // fall through
 
             default:
-                //modifyCounter(button_map[button], value);
                 button_state[button] = value;
                 return true;
         }
@@ -390,7 +330,6 @@ namespace InputMapper
         {
             if (tcontrols[id][c]->getTouching() > TouchControl::TS_NONE || !value)
             {
-                //modifyCounter(button_tp_map[id][c], value);
                 button_state[button] = value;
                 ++res;
             }
@@ -401,11 +340,6 @@ namespace InputMapper
 
     void sendReport()
     {
-        // for (auto it = xinput_counter.begin(); it != xinput_counter.end(); ++it)
-        // {
-        //     device.button(it->first, it->second > 0? it->first : 0);
-        // }
-
         // buttons
         for (uint8_t i = 0; i < 9; ++i) // todo remove magic number
         {

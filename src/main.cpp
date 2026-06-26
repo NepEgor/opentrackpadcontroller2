@@ -27,8 +27,6 @@ const uint8_t pin_button[] = {
     29, // TRACKPAD_RIGHT
 };
 
-//uint8_t button_state[sizeof(pin_button)] = {0};
-
 const uint8_t pin_gyro_sda = 20;
 const uint8_t pin_gyro_scl = 21;
 
@@ -180,13 +178,6 @@ int main()
         for (uint8_t i = 0; i < sizeof(pin_button); ++i)
         {
             uint8_t value = !gpio_get(pin_button[i]);
-            //if (value != button_state[i])
-            //{
-            //    if (InputMapper::mapButton((InputMapper::HardwareButtons)(i), value))
-            //    {
-            //        button_state[i] = value;
-            //    }
-            //}
             InputMapper::mapButton((InputMapper::HardwareButtons)(i), value);
         }
 

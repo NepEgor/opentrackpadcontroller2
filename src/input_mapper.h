@@ -27,7 +27,7 @@ namespace InputMapper
         TRACKPAD_LEFT,
         TRACKPAD_RIGHT,
     };
-    
+
     extern uint16_t button_map[];
 
     bool mapButton(HardwareButtons button, bool value);
